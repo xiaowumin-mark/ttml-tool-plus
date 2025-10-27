@@ -10,7 +10,7 @@ func TestOauth(t *testing.T) {
 	srv := NewOAuthServer(func(code, state, uri string) {
 		// 获取uri？后面的参数
 		fmt.Println("拿到了授权 code:", code)
-		g, err := ExchangeCodeForToken("Ov23li8uHgsuxGywTdLc", "b0b13e28d6586982038ae7e8f134038d2dae7fc7", code, "http://127.0.0.1/callback", state)
+		g, err := ExchangeCodeForToken("Ov23li8uHgsuxGywTdLc", "", code, "http://127.0.0.1/callback", state)
 		if err != nil {
 			t.Error(err)
 			return
