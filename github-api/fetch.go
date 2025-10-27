@@ -28,7 +28,6 @@ func Fetch(url string) ([]byte, error) {
 		log.Println("token:", t)
 	} else {
 		log.Println("不使用token")
-		//req.Header.Set("Authorization", "Bearer "+"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")
 	}
 
 	// 给 GitHub API 推荐的 Accept header，和一个 User-Agent（避免被拒绝）
