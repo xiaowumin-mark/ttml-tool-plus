@@ -77,7 +77,7 @@ func (g *GithubApiService) StartOAuth(CLIENT_ID string) error {
 	githubOauth = NewOAuthServer(func(code, state, uri string) {
 		token, err := ExchangeCodeForToken(
 			CLIENT_ID,
-			"b0b13e28d6586982038ae7e8f134038d2dae7fc7",
+			"",
 			code,
 			"http://127.0.0.1/callback",
 			state,
