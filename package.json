@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@wailsio/runtime": "^3.0.0-alpha.72",
+    "pinia": "^3.0.3"
+  }
+}
