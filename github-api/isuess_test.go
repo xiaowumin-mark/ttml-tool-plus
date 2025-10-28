@@ -2,8 +2,13 @@ package githubapi
 
 import "testing"
 
+var Config = map[string]any{
+	"ttmlDbRepo":     "Steve-xmh/amll-ttml-db",
+	"dbPath":         "C:\\Users\\xiaow\\.ttml-tool-plus\\ttml-db",
+	"bleveIndexPath": "C:\\Users\\xiaow\\.ttml-tool-plus\\bleve-index",
+}
 var Gi = GithubApiService{
-	Repo: Repo,
+	Config: &Config,
 }
 
 func TestGetIsuess(t *testing.T) {

@@ -4,7 +4,8 @@ import "testing"
 
 func TestGitStatusList(t *testing.T) {
 	var g GitApiService
-	e := g.GitOpen(`E:\projects\test\amll-ttml-db`)
+	g.Config = &Config
+	e := g.GitOpen()
 	if e != nil {
 		t.Error(e)
 	}

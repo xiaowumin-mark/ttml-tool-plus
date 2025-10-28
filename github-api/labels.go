@@ -16,7 +16,7 @@ type Label struct {
 }
 
 func (g *GithubApiService) GetLabels() ([]*Label, error) {
-	url := "https://api.github.com/repos/" + g.Repo + "/labels"
+	url := "https://api.github.com/repos/" + (*g.Config)["ttmlDbRepo"].(string) + "/labels"
 	data, err := Fetch(url)
 	if err != nil {
 		return nil, err

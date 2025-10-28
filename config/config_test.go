@@ -15,4 +15,5 @@ func TestConfig(t *testing.T) {
 
 func TestInit(t *testing.T) {
 	ConfigInit()
+	t.Log(Config)
 }

@@ -5,18 +5,19 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	githubapi "ttml-tool-plus/github-api"
 	userdata "ttml-tool-plus/user-data"
 )
 
 var defaultConfig map[string]any = map[string]any{
-	"ttmlDbRepo": "Steve-xmh/amll-ttml-db",
-	"userData":   githubapi.User{},
-	"clientId":   "Ov23li8uHgsuxGywTdLc",
-	"dbPath":     "",
+	"ttmlDbRepo":     "Steve-xmh/amll-ttml-db",
+	"userData":       githubapi.User{},
+	"clientId":       "Ov23li8uHgsuxGywTdLc",
+	"dbPath":         "",
+	"bleveIndexPath": "",
 }
 var Config map[string]any
+var IsInit = false
 
 func ConfigInit() {
 	// 获取用户目录
@@ -31,6 +32,7 @@ func ConfigInit() {
 		filepath.Join(u, ".ttml-tool-plus"),
 		filepath.Join(u, ".ttml-tool-plus", "ttml-db"),
 		filepath.Join(u, ".ttml-tool-plus", "config.json"),
+		filepath.Join(u, ".ttml-tool-plus", "bleve-index"),
 	}
 	AutoCreateDir(paths)
 
@@ -51,6 +53,7 @@ func ConfigInit() {
 
 	//config["dbPath"] = u + "/.ttml-tool-plus/ttml-db"
 	config["dbPath"] = filepath.Join(u, ".ttml-tool-plus", "ttml-db")
+	config["bleveIndexPath"] = filepath.Join(u, ".ttml-tool-plus", "bleve-index")
 
 	// 保存
 	configfile, err = json.MarshalIndent(config, "", "  ")
@@ -62,7 +65,7 @@ func ConfigInit() {
 		panic(err)
 	}
 	Config = config
-
+	IsInit = true
 }
 
 func AutoCreateDir(paths []string) {
@@ -71,7 +74,12 @@ func AutoCreateDir(paths []string) {
 
 			// 创建目录或文件
 			// 包含.就是文件
-			if strings.Contains(path, ".") {
+			//if strings.Contains(path, ".") {
+			// 读取文件拓展名
+			extLt := filepath.Ext(path)
+			if extLt != "" {
+				// 创建文件
+
 				err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
 				if err != nil {
 					panic(err)
@@ -118,7 +126,9 @@ func GetUsetData() {
 	t, err := userdata.GetToken()
 	if t != "" && err == nil {
 		// 获取github用户信息
-		g, err := (&githubapi.GithubApiService{Repo: Config["ttmlDbRepo"].(string)}).GetMe()
+		g, err := (&githubapi.GithubApiService{
+			Config: &Config,
+		}).GetMe()
 		if err != nil {
 			panic(err)
 		}

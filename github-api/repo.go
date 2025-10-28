@@ -62,7 +62,7 @@ type License struct {
 }
 
 func (g *GithubApiService) GetRepo() (*RepoItem, error) {
-	url := "https://api.github.com/repos/" + g.Repo
+	url := "https://api.github.com/repos/" + (*g.Config)["ttmlDbRepo"].(string)
 	data, err := Fetch(url)
 	if err != nil {
 		return nil, err

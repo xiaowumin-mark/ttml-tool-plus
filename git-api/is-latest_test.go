@@ -4,7 +4,8 @@ import "testing"
 
 func TestGitIsLatest(t *testing.T) {
 	var g GitApiService
-	e := g.GitOpen("C:\\Users\\xiaow\\.ttml-tool-plus\\ttml-db")
+	g.Config = &Config
+	e := g.GitOpen()
 	if e != nil {
 		t.Error(e)
 	}

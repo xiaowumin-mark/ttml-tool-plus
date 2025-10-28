@@ -29,7 +29,7 @@ func (p *progressWriter) Write(data []byte) (n int, err error) {
 	return len(data), nil
 }
 
-func (g *GitApiService) GitClone(url string, path string, progress ...func(msg string)) error {
+func (g *GitApiService) GitClone(progress ...func(msg string)) error {
 	if g.Repo != nil {
 		return fmt.Errorf("仓库已存在")
 	}
@@ -39,8 +39,8 @@ func (g *GitApiService) GitClone(url string, path string, progress ...func(msg s
 		pw = &progressWriter{callback: progress[0]}
 	}
 
-	r, err := git.PlainClone(path, &git.CloneOptions{
-		URL:      url,
+	r, err := git.PlainClone((*g.Config)["ttmlDbRepo"].(string), &git.CloneOptions{
+		URL:      "https://github.com",
 		Progress: pw, // ⭐ 将进度回调写入这里！
 	})
 	if err != nil {

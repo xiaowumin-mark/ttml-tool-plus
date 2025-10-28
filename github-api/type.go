@@ -3,8 +3,8 @@ package githubapi
 import "context"
 
 type GithubApiService struct {
-	Repo        string
 	OauthCancel context.CancelFunc
+	Config      *map[string]any
 }
 
 const (

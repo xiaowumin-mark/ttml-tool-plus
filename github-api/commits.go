@@ -59,7 +59,7 @@ type CommitItemFile struct {
 }
 
 func (g *GithubApiService) GetCommits(page, perPage int64) ([]*CommitItem, error) {
-	url := "https://api.github.com/repos/" + g.Repo + "/commits"
+	url := "https://api.github.com/repos/" + (*g.Config)["ttmlDbRepo"].(string) + "/commits"
 	if page > 0 && perPage > 0 {
 		url = url + CreateParams(map[string]any{
 			"page":     page,

@@ -6,7 +6,8 @@ import (
 
 func TestGitLog(t *testing.T) {
 	var g GitApiService
-	e := g.GitOpen("C:\\Users\\xiaow\\.ttml-tool-plus\\ttml-db")
+	g.Config = &Config
+	e := g.GitOpen()
 	if e != nil {
 		t.Error(e)
 	}
@@ -21,7 +22,8 @@ func TestGitLog(t *testing.T) {
 
 func TestGitCommitDetail(t *testing.T) {
 	var g GitApiService
-	e := g.GitOpen("C:\\Users\\xiaow\\.ttml-tool-plus\\ttml-db")
+	g.Config = &Config
+	e := g.GitOpen()
 	if e != nil {
 		t.Error(e)
 	}

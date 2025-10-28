@@ -4,6 +4,7 @@ import (
 	"embed"
 	_ "embed"
 	"log"
+	bleveapi "ttml-tool-plus/bleve-api"
 	"ttml-tool-plus/config"
 	githubapi "ttml-tool-plus/github-api"
 	"ttml-tool-plus/system"
@@ -35,10 +36,15 @@ func main() {
 		Description: "ttml-tool-plus",
 		Services: []application.Service{
 			application.NewService(&githubapi.GithubApiService{
-				Repo: config.Config["ttmlDbRepo"].(string),
+				Config: &config.Config,
 			}),
-			application.NewService(&system.SystemApiService{}),
+			application.NewService(&system.SystemApiService{
+				Config: &config.Config}),
 			application.NewService(&config.ConfigApiService{}),
+			application.NewService(&githubapi.GithubApiService{
+				Config: &config.Config}),
+			application.NewService(&bleveapi.BleveApiService{
+				Config: &config.Config}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

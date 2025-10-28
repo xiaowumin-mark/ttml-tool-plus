@@ -30,7 +30,7 @@ type IsuessItem struct {
 }
 
 func (g *GithubApiService) GetIssues(page, perPage int64, state string) ([]*IsuessItem, error) {
-	url := "https://api.github.com/repos/" + g.Repo + "/issues"
+	url := "https://api.github.com/repos/" + (*g.Config)["ttmlDbRepo"].(string) + "/issues"
 	if page > 0 && perPage > 0 {
 		url = url + CreateParams(map[string]any{
 			"state":    state,
