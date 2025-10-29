@@ -3,7 +3,6 @@ package bleveapi
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,19 +13,20 @@ import (
 	"github.com/xiaowumin-mark/ttml-search-core/ttml"
 )
 
-func (b *BleveApiService) BleveApiInit(onProgress ...func(string, string)) error {
+func (b *BleveApiService) BleveApiInit(onProgress ...func(string, string, float64)) error {
 
-	var progress func(string, string)
+	var progress func(string, string, float64)
 	if len(onProgress) > 0 && onProgress[0] != nil {
 		progress = onProgress[0]
 	} else {
-		progress = func(string, string) {} // 空实现，免判断
+		progress = func(string, string, float64) {} // 空实现，免判断
 	}
+	var initProgress float64 = 0
 
 	var db gitapi.GitApiService
 	db.Config = b.Config
 	// 检查是否存在git仓库
-	progress("Checking", "检查仓库是否存在...")
+	progress("Checking", "检查仓库是否存在...", initProgress)
 	err := db.GitOpen()
 	if err != nil {
 		// git没有仓库
@@ -34,7 +34,7 @@ func (b *BleveApiService) BleveApiInit(onProgress ...func(string, string)) error
 		return err
 	}
 
-	progress("Init", "初始化索引...")
+	progress("Init", "初始化索引...", initProgress)
 	b.MetaIndex = ttmlSearchCore.NewLyrics("lyrics-meta", "gse", filepath.Join((*b.Config)["bleveIndexPath"].(string), "lyrics-meta.bleve"))
 	docMapping := bleve.NewDocumentMapping()
 
@@ -93,21 +93,28 @@ func (b *BleveApiService) BleveApiInit(onProgress ...func(string, string)) error
 	lyricDoc.AddFieldMappingsAt("ID", lyInd)
 
 	b.LyricIndex.AddDocMapping(lyricDoc, "lyric_line") // 建议使用更清晰的 Type 字符串
-	progress("Init", "初始化索引完成...")
+	progress("Init", "初始化索引完成...", initProgress)
 
 	isonce, err := b.MetaIndex.CreateIndexMapping().CreateIndex()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	islinesonce, err := b.LyricIndex.CreateIndexMapping().CreateIndex()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
 	if islinesonce || isonce {
-		progress("Parse", "解析歌词文件...")
+		progress("Parse", "解析歌词文件...", initProgress)
+
+		// 读取文件数量 filepath.Join((*b.Config)["dbPath"].(string), "raw-lyrics")
+		files, err := os.ReadDir(filepath.Join((*b.Config)["dbPath"].(string), "raw-lyrics"))
+		if err != nil {
+			return err
+		}
+
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		log.Println(filepath.Join((*b.Config)["dbPath"].(string), "raw-lyrics"))
 		results := ttmlSearchCore.RunFileWorkers(
 			ctx,
 			filepath.Join((*b.Config)["dbPath"].(string), "raw-lyrics"),
@@ -137,38 +144,42 @@ func (b *BleveApiService) BleveApiInit(onProgress ...func(string, string)) error
 			},
 		)
 		batch := b.MetaIndex.GetIndex().NewBatch()
+		var index int
 		for results := range results {
-			progress("Parse", fmt.Sprint(results.LyricIndex.ID, results.LyricIndex.Title))
+			index++
+			initProgress = float64(index) / float64(len(files)) * 100
+			progress("Parse", fmt.Sprint(results.LyricIndex.ID, results.LyricIndex.Title), initProgress)
 			err := batch.Index(results.LyricIndex.ID, results.LyricIndex)
 			if err != nil {
-				progress("Error", fmt.Sprint("编制文件出错 ", err))
-				log.Println("index error:", err)
+				progress("Error", fmt.Sprint("编制文件出错 ", err), initProgress)
+
 			}
 			lbatch := b.LyricIndex.GetIndex().NewBatch()
 			for _, l := range results.Lyrics {
 				err := lbatch.Index(l.ID, l)
 				if err != nil {
-					progress("Error", fmt.Sprint("编制文件出错 ", err))
-					log.Println("index error:", err)
+					progress("Error", fmt.Sprint("编制文件出错 ", err), initProgress)
+
 				}
 			}
 			err = b.LyricIndex.AddDocs(lbatch)
 			if err != nil {
-				log.Println("batch error:", err)
+				progress("Error", fmt.Sprint("编制文件出错 ", err), initProgress)
+
 			}
-			log.Println("✅ indexed:", results.LyricIndex.Title)
-			progress("Index", fmt.Sprint("索引文件", results.LyricIndex.Title, "完成..."))
+
+			progress("Index", fmt.Sprint("索引文件", results.LyricIndex.Title, "完成..."), initProgress)
 
 		}
 		err = b.MetaIndex.AddDocs(batch)
 		if err != nil {
-			progress("Error", fmt.Sprint("编制文件出错 ", err))
-			log.Println("batch error:", err)
+			progress("Error", fmt.Sprint("编制文件出错 ", err), initProgress)
 		}
-		progress("Index", "索引完成")
+		initProgress = 100
+		progress("Index", "索引完成", initProgress)
 	} else {
-		progress("Index", "索引文件完成")
-		log.Println("✅ indexed")
+		initProgress = 100
+		progress("Index", "索引文件完成", initProgress)
 	}
 
 	return nil

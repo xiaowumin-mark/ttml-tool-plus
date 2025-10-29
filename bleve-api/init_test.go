@@ -12,8 +12,8 @@ var Config = map[string]any{
 func TestBleveApiInit(t *testing.T) {
 	err := (&BleveApiService{
 		Config: &Config,
-	}).BleveApiInit(func(typ, m string) {
-		t.Log(typ, m)
+	}).BleveApiInit(func(typ, m string, p float64) {
+		t.Log(typ, p)
 	})
 	if err != nil {
 		t.Error(err)
